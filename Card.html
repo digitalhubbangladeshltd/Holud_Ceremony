@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Card Animation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e9d5ff 0%, #fce7f3 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .envelope-container {
+            position: absolute;
+            width: 350px;
+            height: 300px;
+            cursor: pointer;
+            transition: all 0.7s ease-in-out;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .envelope-container.hidden {
+            opacity: 0;
+            transform: scale(0.5);
+            pointer-events: none;
+        }
+
+        .envelope-closed,
+        .envelope-open {
+            position: absolute;
+            inset: 0;
+            transition: opacity 0.3s;
+        }
+
+        .envelope-closed {
+            opacity: 1;
+        }
+
+        .envelope-container.open .envelope-closed {
+            opacity: 0;
+        }
+
+        .envelope-open {
+            opacity: 0;
+        }
+
+        .envelope-container.open .envelope-open {
+            opacity: 1;
+        }
+
+        .envelope-closed svg,
+        .envelope-open svg {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 20px 25px rgba(0,0,0,0.3));
+        }
+
+        .card-container {
+            width: 90%;
+            max-width: 340px;
+            aspect-ratio: 3/4;
+            perspective: 1000px;
+            opacity: 0;
+            transform: scale(0.5) translateY(20px);
+            transition: all 0.7s ease-out;
+            pointer-events: none;
+            cursor: pointer;
+        }
+
+        .card-container.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s ease-in-out;
+            transform-style: preserve-3d;
+        }
+
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        .card-front svg,
+        .card-back svg {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+        }
+
+        .instructions {
+            position: absolute;
+            text-align: center;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            animation: pulse 2s infinite;
+        }
+
+        .instructions.hidden {
+            display: none;
+        }
+
+        .click-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  cursor: pointer;
+}
+
+.hand {
+  font-size: 32px;
+  animation: tap 1.2s infinite ease-in-out;
+}
+
+.map-section {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.map-btn {
+  display: inline-block;
+  padding: 12px 22px;
+  background: linear-gradient(135deg, #3c82c8, #0d6fc5);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 30px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  animation: pulse 1.8s infinite;
+}
+
+.map-btn:hover {
+  transform: scale(1.05);
+}
+
+/* subtle attention animation */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(200,155,60,0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(200,155,60,0); }
+  100% { box-shadow: 0 0 0 0 rgba(200,155,60,0); }
+}
+
+
+/* Tap animation */
+@keyframes tap {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.85); }
+  100% { transform: scale(1); }
+}
+
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            .instructions {
+                font-size: 12px;
+                bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="envelope-container" id="envelope">
+            <div class="envelope-closed">
+                <svg viewBox="0 0 300 200">
+                    <rect x="10" y="40" width="280" height="160" rx="8" fill="#E63946" stroke="#C1121F" stroke-width="3"/>
+                    <path d="M 10 40 L 150 140 L 290 40" fill="#DC2F3E" stroke="#C1121F" stroke-width="3"/>
+                    <path d="M 10 200 L 150 100 L 290 200" fill="#DC2F3E" stroke="#C1121F" stroke-width="3"/>
+                    <text x="150" y="170" text-anchor="middle" fill="white" font-size="12">Nazmul Anowar Jewel</text>
+                    <text x="150" y="190" text-anchor="middle" fill="white" font-size="12">Road 8/A,Dhanmondi,Dhaka</text>
+                </svg>
+            </div>
+
+            <div class="envelope-open">
+                <svg viewBox="0 0 300 200">
+                    <rect x="10" y="60" width="280" height="140" rx="8" fill="#E63946" stroke="#C1121F" stroke-width="3"/>
+                    <path d="M 10 60 L 150 10 L 290 60" fill="#F77F00" stroke="#C1121F" stroke-width="3"/>
+                    <path d="M 10 200 L 150 100 L 290 200" fill="#DC2F3E" stroke="#C1121F" stroke-width="3"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="card-container" id="card">
+            <div class="card-inner">
+                <div class="card-front">
+                    <img width="100%" height="100%" style="border-radius: 15px;" src="ev_back.jpg" alt="">
+                    <!-- <svg viewBox="0 0 300 400">
+                        <defs>
+                            <linearGradient id="frontGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#667EEA"/>
+                                <stop offset="100%" stop-color="#764BA2"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="300" height="400" rx="16" fill="url(#frontGradient)"/>
+                        <circle cx="150" cy="120" r="50" fill="white" opacity="0.2"/>
+                        <text x="150" y="200" text-anchor="middle" fill="white" font-size="32" font-weight="bold">EVENT</text>
+                        <text x="150" y="240" text-anchor="middle" fill="white" font-size="20">INVITATION</text>
+                        <text x="150" y="320" text-anchor="middle" fill="white" font-size="14" opacity="0.8">Click to flip</text>
+                    </svg> -->
+<div class="map-section">
+  <a 
+    href="https://www.google.com/maps?q=Grand+Bhawal+Resort+Bhawal+Monohardia+Gazipur" 
+    target="_blank"
+    class="map-btn"
+  >
+    📍 View Location on Google Maps
+  </a>
+</div>
+                </div>
+
+                <div class="card-back">
+                    <img width="100%" height="100%" style="border-radius: 15px;" src="ev_front.jpg" alt="">
+                    <!-- <svg viewBox="0 0 300 400">
+                        <defs>
+                            <linearGradient id="backGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#F093FB"/>
+                                <stop offset="100%" stop-color="#F5576C"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="300" height="400" rx="16" fill="url(#backGradient)"/>
+                        <text x="150" y="80" text-anchor="middle" fill="white" font-size="24" font-weight="bold">Event Details</text>
+                        <text x="150" y="140" text-anchor="middle" fill="white" font-size="16">Date: Jan 15, 2026</text>
+                        <text x="150" y="180" text-anchor="middle" fill="white" font-size="16">Time: 7:00 PM</text>
+                        <text x="150" y="220" text-anchor="middle" fill="white" font-size="16">Venue: Grand Hall</text>
+                        <text x="150" y="320" text-anchor="middle" fill="white" font-size="14" opacity="0.8">Click to flip back</text>
+                    </svg> -->
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions" id="instructions">
+            <div class="click-hint">
+               <span class="hand">👆</span>
+           </div>
+        </div>
+    </div>
+
+    <script>
+        var envelope = document.getElementById('envelope');
+        var card = document.getElementById('card');
+        var instructions = document.getElementById('instructions');
+        
+        var isEnvelopeOpen = false;
+        var isCardVisible = false;
+
+        envelope.addEventListener('click', function() {
+            if (!isEnvelopeOpen) {
+                isEnvelopeOpen = true;
+                envelope.classList.add('open');
+                instructions.classList.add('hidden');
+                
+                setTimeout(function() {
+                    isCardVisible = true;
+                    card.classList.add('visible');
+                    envelope.classList.add('hidden');
+                }, 600);
+            }
+        });
+
+        card.addEventListener('click', function() {
+            if (isCardVisible) {
+                card.classList.toggle('flipped');
+            }
+        });
+    </script>
+</body>
+</html>
